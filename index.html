@@ -1,0 +1,241 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Stories O Diário</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@500;700;800&display=swap">
+<style>
+  :root {
+    --azul: #265691;
+    --azul-escuro: #18407a;
+    --fundo: #eef3f9;
+    --cartao: #ffffff;
+    --texto: #12233b;
+    --suave: #5b6b82;
+    --linha: #d6e0ec;
+    --ok: #1f8a4c;
+    --erro: #c0392b;
+    --andando: #c98a00;
+    --fonte: "Montserrat", system-ui, -apple-system, "Segoe UI", sans-serif;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --fundo: #0e1a2b; --cartao: #16253b; --texto: #e8eef7; --suave: #9fb0c8;
+      --linha: #263a57; --azul: #3c74bd; --azul-escuro: #2b5ea3;
+      color-scheme: dark;
+    }
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--fundo); color: var(--texto);
+    font-family: var(--fonte); font-size: 16px; line-height: 1.5;
+  }
+  header {
+    background: var(--azul-escuro); color: #fff;
+    padding: 22px max(16px, env(safe-area-inset-left)) 22px;
+  }
+  header .dentro, main { max-width: 560px; margin: 0 auto; }
+  header h1 { margin: 0; font-size: 1.35rem; font-weight: 800; letter-spacing: -0.01em; }
+  header p { margin: 2px 0 0; opacity: .8; font-size: .9rem; font-weight: 500; }
+  main {
+    padding: 24px max(16px, env(safe-area-inset-right)) 48px max(16px, env(safe-area-inset-left));
+    display: grid; gap: 20px;
+  }
+  .cartao {
+    background: var(--cartao); border: 1px solid var(--linha); border-radius: 14px;
+    padding: 20px; display: grid; gap: 14px;
+  }
+  h2 { margin: 0; font-size: 1rem; font-weight: 700; }
+  .sub { margin: 0; color: var(--suave); font-size: .9rem; }
+  button {
+    font: inherit; cursor: pointer; border-radius: 12px; border: 0;
+  }
+  #gerar {
+    background: var(--azul); color: #fff; font-weight: 800; font-size: 1.15rem;
+    padding: 18px; width: 100%;
+  }
+  #gerar:hover { background: var(--azul-escuro); }
+  #gerar:disabled { opacity: .55; cursor: wait; }
+  button:focus-visible, input:focus-visible { outline: 3px solid #f2b705; outline-offset: 2px; }
+  .aviso { margin: 0; font-size: .9rem; min-height: 1.4em; }
+  .aviso.erro { color: var(--erro); }
+  .aviso.ok { color: var(--ok); }
+  ul { list-style: none; margin: 0; padding: 0; display: grid; }
+  li {
+    display: flex; align-items: center; gap: 12px; padding: 12px 0;
+    border-top: 1px solid var(--linha);
+  }
+  li:first-child { border-top: 0; }
+  .pilula {
+    font-size: .75rem; font-weight: 700; padding: 4px 10px; border-radius: 99px;
+    white-space: nowrap; color: #fff;
+  }
+  .pilula.ok { background: var(--ok); }
+  .pilula.erro { background: var(--erro); }
+  .pilula.andando { background: var(--andando); }
+  .info { min-width: 0; display: grid; }
+  .info strong { font-size: .95rem; font-variant-numeric: tabular-nums; }
+  .info span { color: var(--suave); font-size: .82rem; }
+  label { font-weight: 700; font-size: .9rem; }
+  input {
+    font: inherit; width: 100%; padding: 12px; border-radius: 10px;
+    border: 1px solid var(--linha); background: var(--fundo); color: var(--texto);
+  }
+  .secundario {
+    background: transparent; color: var(--azul); font-weight: 700; padding: 0;
+    justify-self: start; font-size: .85rem;
+  }
+  .salvar { background: var(--azul); color: #fff; font-weight: 700; padding: 12px; }
+  @media (prefers-reduced-motion: no-preference) {
+    .pilula.andando { animation: pulsar 1.2s ease-in-out infinite; }
+    @keyframes pulsar { 50% { opacity: .55; } }
+  }
+</style>
+</head>
+<body>
+<header>
+  <div class="dentro">
+    <h1>Stories O Diário</h1>
+    <p>Gera as artes das matérias e manda no grupo do Telegram</p>
+  </div>
+</header>
+
+<main>
+  <section class="cartao" id="tela-chave" hidden>
+    <h2>Primeiro acesso</h2>
+    <p class="sub">Cole a chave de acesso que você recebeu. Ela fica salva só neste navegador.</p>
+    <label for="chave">Chave de acesso</label>
+    <input id="chave" type="password" autocomplete="off" placeholder="github_pat_...">
+    <button class="salvar" id="salvar">Salvar chave</button>
+    <p class="aviso" id="aviso-chave"></p>
+  </section>
+
+  <section class="cartao" id="tela-principal" hidden>
+    <button id="gerar">Gerar stories agora</button>
+    <p class="sub">Pega as matérias de ontem a partir das 12h até agora. As artes chegam no grupo do Telegram em 1 a 2 minutos.</p>
+    <p class="aviso" id="aviso"></p>
+  </section>
+
+  <section class="cartao" id="tela-historico" hidden>
+    <h2>Últimas gerações</h2>
+    <ul id="lista"><li><div class="info"><span>Carregando…</span></div></li></ul>
+    <button class="secundario" id="trocar">Trocar chave de acesso</button>
+  </section>
+</main>
+
+<script>
+  // Repositório onde o sistema roda
+  const REPO = "outdoorhub01-eng/stories-odiario";
+  const WORKFLOW = "stories.yml";
+  const API = "https://api.github.com/repos/" + REPO;
+
+  const $ = (id) => document.getElementById(id);
+  let chave = "";
+  try { chave = localStorage.getItem("chave-stories") || ""; } catch (e) {}
+  let timer = null;
+
+  function cabecalhos() {
+    return {
+      "Authorization": "Bearer " + chave,
+      "Accept": "application/vnd.github+json",
+      "X-GitHub-Api-Version": "2022-11-28"
+    };
+  }
+
+  function mostrar(logado) {
+    $("tela-chave").hidden = logado;
+    $("tela-principal").hidden = !logado;
+    $("tela-historico").hidden = !logado;
+  }
+
+  function aviso(el, texto, tipo) {
+    el.textContent = texto;
+    el.className = "aviso" + (tipo ? " " + tipo : "");
+  }
+
+  function formatar(iso) {
+    const d = new Date(iso);
+    return d.toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit" }) + " às " +
+           d.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" });
+  }
+
+  function situacao(run) {
+    if (run.status !== "completed") return ["andando", "Gerando…"];
+    if (run.conclusion === "success") return ["ok", "Pronto"];
+    return ["erro", "Deu erro"];
+  }
+
+  async function carregar() {
+    try {
+      const r = await fetch(API + "/actions/workflows/" + WORKFLOW + "/runs?per_page=6", { headers: cabecalhos() });
+      if (r.status === 401) { aviso($("aviso"), "Chave inválida ou expirada. Clique em Trocar chave de acesso.", "erro"); return; }
+      if (!r.ok) throw new Error(r.status);
+      const dados = await r.json();
+      const lista = $("lista");
+      lista.innerHTML = "";
+      if (!dados.workflow_runs.length) {
+        lista.innerHTML = '<li><div class="info"><span>Nenhuma geração ainda.</span></div></li>';
+      }
+      let algumAndando = false;
+      for (const run of dados.workflow_runs) {
+        const [classe, texto] = situacao(run);
+        if (classe === "andando") algumAndando = true;
+        const quem = run.event === "schedule" ? "Automático das 8h" : "Pelo botão";
+        const li = document.createElement("li");
+        li.innerHTML = '<span class="pilula ' + classe + '">' + texto + '</span>' +
+          '<div class="info"><strong>' + formatar(run.created_at) + '</strong><span>' + quem + '</span></div>';
+        lista.appendChild(li);
+      }
+      clearTimeout(timer);
+      timer = setTimeout(carregar, algumAndando ? 5000 : 30000);
+      if (!algumAndando) $("gerar").disabled = false;
+    } catch (e) {
+      aviso($("aviso"), "Não consegui ver o histórico agora. Confira a internet e recarregue a página.", "erro");
+    }
+  }
+
+  $("gerar").addEventListener("click", async () => {
+    $("gerar").disabled = true;
+    aviso($("aviso"), "Enviando pedido…");
+    try {
+      const r = await fetch(API + "/actions/workflows/" + WORKFLOW + "/dispatches", {
+        method: "POST", headers: cabecalhos(), body: JSON.stringify({ ref: "main" })
+      });
+      if (r.status === 204) {
+        aviso($("aviso"), "Pedido enviado. Fique de olho no grupo do Telegram.", "ok");
+        setTimeout(carregar, 4000);
+      } else if (r.status === 401 || r.status === 403 || r.status === 404) {
+        aviso($("aviso"), "A chave não tem permissão. Peça uma nova chave pra quem configurou o sistema.", "erro");
+        $("gerar").disabled = false;
+      } else {
+        throw new Error(r.status);
+      }
+    } catch (e) {
+      aviso($("aviso"), "Não deu pra enviar o pedido. Tente de novo em instantes.", "erro");
+      $("gerar").disabled = false;
+    }
+  });
+
+  $("salvar").addEventListener("click", async () => {
+    const valor = $("chave").value.trim();
+    if (!valor) { aviso($("aviso-chave"), "Cole a chave antes de salvar.", "erro"); return; }
+    chave = valor;
+    const r = await fetch(API, { headers: cabecalhos() }).catch(() => null);
+    if (!r || !r.ok) { aviso($("aviso-chave"), "Essa chave não funcionou. Confira se copiou ela inteira.", "erro"); return; }
+    try { localStorage.setItem("chave-stories", chave); } catch (e) {}
+    $("chave").value = "";
+    mostrar(true); carregar();
+  });
+
+  $("trocar").addEventListener("click", () => {
+    try { localStorage.removeItem("chave-stories"); } catch (e) {}
+    chave = ""; clearTimeout(timer);
+    aviso($("aviso-chave"), ""); mostrar(false);
+  });
+
+  if (chave) { mostrar(true); carregar(); } else { mostrar(false); }
+</script>
+</body>
+</html>
