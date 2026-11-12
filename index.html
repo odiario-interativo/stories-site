@@ -284,11 +284,22 @@
   });
 
   $("salvar").addEventListener("click", async () => {
-    const valor = $("chave").value.trim();
+    // tira espaços, quebras de linha e caracteres invisíveis que o celular às vezes cola junto
+    const valor = $("chave").value.replace(/[\s​-‍﻿"'“”‘’]/g, "");
     if (!valor) { aviso($("aviso-chave"), "Cole a chave antes de salvar.", "erro"); return; }
     chave = valor;
     const r = await fetch(API, { headers: cabecalhos() }).catch(() => null);
-    if (!r || !r.ok) { aviso($("aviso-chave"), "Essa chave não funcionou. Confira se copiou ela inteira.", "erro"); return; }
+    if (!r) { aviso($("aviso-chave"), "Sem conexão com o GitHub. Confira a internet e tente de novo.", "erro"); return; }
+    if (!r.ok) {
+      const comeco = valor.slice(0, 11), tam = valor.length;
+      let msg;
+      if (!valor.startsWith("github_pat_")) msg = "A chave deve começar com github_pat_ (a sua começa com " + comeco + "). Copie de novo.";
+      else if (r.status === 401) msg = "O GitHub não reconheceu essa chave (" + tam + " caracteres). Ela pode estar incompleta ou ter sido apagada. Copie de novo ou gere uma nova.";
+      else if (r.status === 404 || r.status === 403) msg = "A chave funciona, mas não tem acesso ao sistema de stories. Gere uma chave nova escolhendo o repositório stories-odiario.";
+      else msg = "O GitHub respondeu com erro " + r.status + ". Tente de novo em instantes.";
+      aviso($("aviso-chave"), msg, "erro");
+      return;
+    }
     try { localStorage.setItem("chave-stories", chave); } catch (e) {}
     $("chave").value = "";
     mostrar(true); carregar();
